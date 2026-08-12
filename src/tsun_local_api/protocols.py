@@ -90,6 +90,11 @@ def _u32(registers: dict[int, int], address: int) -> int:
     return registers[address] << 16 | registers[address + 1]
 
 
+def _scaled(value: int, factor: float, precision: int) -> float:
+    """Scale an integer register without leaking binary float noise."""
+    return round(value * factor, precision)
+
+
 def detect_1511_pv_count(registers: dict[int, int]) -> int:
     """Return the highest populated PV input for the 1511 map."""
     bases = (0x0E10, 0x0E17, 0x0E1E, 0x0ED8, 0x0EDF, 0x0EE6)
@@ -107,12 +112,12 @@ def detect_1511_pv_count(registers: dict[int, int]) -> int:
 def decode_1511(registers: dict[int, int], pv_count: int) -> dict[str, float]:
     """Decode telemetry from a supported 1511 micro-inverter."""
     values = {
-        "ac_voltage": registers[0x0BC4] * 0.1,
-        "ac_current": registers[0x0BC5] * 0.01,
-        "ac_frequency": registers[0x0BC7] * 0.01,
-        "ac_power": registers[0x0BCD] * 0.1,
-        "ac_energy_today": registers[0x0BCE] * 0.01,
-        "ac_energy_total": _u32(registers, 0x0BCF) * 0.01,
+        "ac_voltage": _scaled(registers[0x0BC4], 0.1, 1),
+        "ac_current": _scaled(registers[0x0BC5], 0.01, 2),
+        "ac_frequency": _scaled(registers[0x0BC7], 0.01, 2),
+        "ac_power": _scaled(registers[0x0BCD], 0.1, 1),
+        "ac_energy_today": _scaled(registers[0x0BCE], 0.01, 2),
+        "ac_energy_total": _scaled(_u32(registers, 0x0BCF), 0.01, 2),
     }
     bases = (0x0E10, 0x0E17, 0x0E1E, 0x0ED8, 0x0EDF, 0x0EE6)
     totals = (0x0E28, 0x0E2A, 0x0E2C, 0x0EF0, 0x0EF2, 0x0EF4)
@@ -121,11 +126,13 @@ def decode_1511(registers: dict[int, int], pv_count: int) -> dict[str, float]:
     ):
         values.update(
             {
-                f"pv{number}_voltage": registers[base] * 0.1,
-                f"pv{number}_current": registers[base + 1] * 0.01,
-                f"pv{number}_power": registers[base + 2] * 0.1,
-                f"pv{number}_energy_today": registers[base + 4] * 0.01,
-                f"pv{number}_energy_total": _u32(registers, total) * 0.01,
+                f"pv{number}_voltage": _scaled(registers[base], 0.1, 1),
+                f"pv{number}_current": _scaled(registers[base + 1], 0.01, 2),
+                f"pv{number}_power": _scaled(registers[base + 2], 0.1, 1),
+                f"pv{number}_energy_today": _scaled(registers[base + 4], 0.01, 2),
+                f"pv{number}_energy_total": _scaled(
+                    _u32(registers, total), 0.01, 2
+                ),
             }
         )
     values["dc_power_total"] = round(
@@ -177,23 +184,25 @@ def detect_02b0_pv_count(registers: dict[int, int]) -> int:
 def decode_02b0(registers: dict[int, int], pv_count: int) -> dict[str, float]:
     """Decode validated TSOL-MX500-compatible telemetry."""
     values = {
-        "ac_voltage": registers[0x3009] * 0.1,
-        "ac_current": registers[0x300A] * 0.01,
-        "ac_frequency": registers[0x300B] * 0.01,
-        "ac_power": registers[0x300F] * 0.1,
-        "ac_energy_today": registers[0x301C] * 0.01,
-        "ac_energy_total": _u32(registers, 0x301D) * 0.01,
+        "ac_voltage": _scaled(registers[0x3009], 0.1, 1),
+        "ac_current": _scaled(registers[0x300A], 0.01, 2),
+        "ac_frequency": _scaled(registers[0x300B], 0.01, 2),
+        "ac_power": _scaled(registers[0x300F], 0.1, 1),
+        "ac_energy_today": _scaled(registers[0x301C], 0.01, 2),
+        "ac_energy_total": _scaled(_u32(registers, 0x301D), 0.01, 2),
     }
     for number in range(1, pv_count + 1):
         base = 0x3010 + (number - 1) * 3
         energy = 0x301F + (number - 1) * 3
         values.update(
             {
-                f"pv{number}_voltage": registers[base] * 0.1,
-                f"pv{number}_current": registers[base + 1] * 0.01,
-                f"pv{number}_power": registers[base + 2] * 0.1,
-                f"pv{number}_energy_today": registers[energy] * 0.01,
-                f"pv{number}_energy_total": _u32(registers, energy + 1) * 0.01,
+                f"pv{number}_voltage": _scaled(registers[base], 0.1, 1),
+                f"pv{number}_current": _scaled(registers[base + 1], 0.01, 2),
+                f"pv{number}_power": _scaled(registers[base + 2], 0.1, 1),
+                f"pv{number}_energy_today": _scaled(registers[energy], 0.01, 2),
+                f"pv{number}_energy_total": _scaled(
+                    _u32(registers, energy + 1), 0.01, 2
+                ),
             }
         )
     values["dc_power_total"] = round(
