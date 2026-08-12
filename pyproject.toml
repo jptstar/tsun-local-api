@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tsun-local-api"
+version = "0.2.0"
+description = "Asynchronous local API for supported TSUN micro-inverters"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+authors = [
+  { name = "Jean-Philippe TESTART" },
+]
+dependencies = [
+  "aiohttp>=3.11.0",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Repository = "https://github.com/jptstar/tsun-local-api"
+Issues = "https://github.com/jptstar/tsun-local-api/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tsun_local_api"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --strict-config"
+testpaths = ["tests"]
+
+[dependency-groups]
+test = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=6.0",
+  "ruff>=0.12",
+]
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.coverage.run]
+branch = true
+source = ["tsun_local_api"]
