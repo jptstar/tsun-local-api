@@ -1,5 +1,7 @@
 """Asynchronous local API for supported TSUN micro-inverters."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
