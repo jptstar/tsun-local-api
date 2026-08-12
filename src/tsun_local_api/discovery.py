@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Iterable
 from ipaddress import IPv4Address, IPv4Network, ip_network
-import json
 
 DISCOVERY_CONCURRENCY = 128
 DISCOVERY_TIMEOUT = 1.0
