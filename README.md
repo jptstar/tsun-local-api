@@ -20,6 +20,12 @@ or maintained by TSUN.
 
 ## Hardware validation
 
+`tsun-local-api` is protocol-based rather than model-based. Compatibility is
+determined by the local protocol and register layout exposed by the logger, not
+by a fixed model allowlist. The table below identifies devices tested on
+physical hardware; it is not the complete list of potentially compatible
+devices.
+
 | Family | Model | PV inputs | Status |
 |---|---:|---:|---|
 | TITAN | TSOL-MP3000 | 6 | Validated on physical hardware |
